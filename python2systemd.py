@@ -4,6 +4,11 @@ import os, subprocess
 # it also lets you check if service is running
 # and disable and uninstall the service
 
+
+python_bin_folder = "/usr/bin"
+python_bin_folder_exists = False
+python_bin = "python3"
+python_bin_exists = False
 py_apps_folder = os.getcwd() + "/python_apps"
 py_apps_folder_exists = False
 systemd_folder = "/etc/systemd/system"
@@ -85,7 +90,7 @@ def sys_check():
     print(subprocess.getoutput("systemd --version"))
 
 def check_folders():
-    global systemd_folder, py_apps_folder
+    global systemd_folder, systemd_folder_exists, py_apps_folder, py_apps_folder_exists, python_bin_folder, python_bin_folder_exists, python_bin, python_bin_exists
     systemd_folder_exists = os.path.exists(systemd_folder)
     if systemd_folder_exists == True:
         print("Found System D folder")
@@ -100,6 +105,22 @@ def check_folders():
         print("No Python apps folder found!")
         print("Exiting app...")
         exit()
+    python_bin_folder_exists = os.path.exists(python_bin_folder)
+    if python_bin_folder_exists == True:
+        print("Found Python bin folder")
+    else:
+        print("No Python bin folder found!")
+        print("Exiting app...")
+        exit()
+    python_bin_exists = os.path.exists(python_bin_folder + "/" + python_bin)
+    if python_bin_exists == True:
+       print("Found Python bin")
+       bytes = os.path.getsize(python_bin_folder + "/" + python_bin)
+       print("File size : " + str(bytes) + " bytes")
+    else:
+       print("No Python bin file found!")
+       print("Exiting app...")
+       exit()
 
 def list_apps():
     global py_apps_folder
@@ -148,7 +169,7 @@ def read_input_app():
     # check if app exists in folder, exit app if no app exists
 
 def read_input_service():
-    global service_filename, service_selected, systemd_folder
+    global service_selected, systemd_folder
     service = input("Service : ")
     if service == "":
         print("No service selected!")
@@ -171,7 +192,7 @@ def read_input_service():
 
 
 def read_name_service():
-    global service_name, service_filename, app_selected
+    global service_name, service_filename, app_selected, systemd_folder
     service_name = input("Enter the name of the service : ")
     if service_name == "":
         print("No name entered!")
@@ -188,7 +209,7 @@ def read_name_service():
         print("Ready to install service.")
 
 def save_systemd_service():
-    global service_filename, service_name, app_selected, service_selected, systemd_folder, py_apps_folder
+    global service_filename, service_name, app_selected, service_selected, systemd_folder, py_apps_folder, python_bin_folder, python_bin
     if service_filename == "":
         print("Error. No service filename.")
         exit()
@@ -210,7 +231,7 @@ def save_systemd_service():
             f.write("[Service]\n")
             f.write("Type=simple\n")
             f.write("Restart=always\n")
-            f.write("ExecStart=/usr/bin/python3 " + py_apps_folder + "/" + app_selected + "\n")
+            f.write("ExecStart=" + python_bin_folder + "/" + python_bin + " " + py_apps_folder + "/" + app_selected + "\n")
             f.write("[Install]\n")
             f.write("WantedBy=multi-user.target\n")
             f.close()
@@ -253,7 +274,7 @@ def status_systemd_service():
     print(subprocess.getoutput("sudo systemctl status " + service_selected))
 
 def remove_systemd_service():
-    global service_selected
+    global service_selected, systemd_folder
     print("Are you sure you want to remove this service?")
     option = input("yes or no? : ")
     if option == "no":
