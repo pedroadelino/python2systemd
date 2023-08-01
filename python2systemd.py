@@ -1,3 +1,5 @@
+#!/usr/bin python3
+
 import os, subprocess
 # this app installs python apps
 # and activate the apps as System D services
@@ -302,10 +304,14 @@ def install_service():
     start_systemd_service()
 
 # Main
-print("Python 2 System D")
-print("Made by Pedro Adelino")
-print("Starting...")
-sys_check()
-check_folders()
-menu()
-print("Bye!")
+def main():
+    print("Python 2 System D")
+    print("Made by Pedro Adelino")
+    print("Starting...")
+    sys_check()
+    check_folders()
+    menu()
+    print("Bye!")
+
+if __name__ == "__main__":
+    main()
