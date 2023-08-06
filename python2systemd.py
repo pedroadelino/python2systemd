@@ -34,23 +34,23 @@ def menu():
     print("8 - Reload Daemon")
     print("9 - Exit app")
     option = input("Choose an option : ")
-    if option == "1":
+    if option == "1" or option == 1:
        install_service()
-    elif option == "2":
+    elif option == "2" or option == 2:
        remove_service()
-    elif option == "3":
+    elif option == "3" or option == 3:
        start_service()
-    elif option == "4":
+    elif option == "4" or option == 4:
        stop_service()
-    elif option == "5":
+    elif option == "5" or option == 5:
        enable_service()
-    elif option == "6":
+    elif option == "6" or option == 6:
        disable_service()
-    elif option == "7":
+    elif option == "7" or option == 7:
        check_status()
-    elif option == "8":
+    elif option == "8" or option == 8:
        reload_systemd_daemon()
-    elif option == "9":
+    elif option == "9" or option == 9:
        print("Bye")
        exit()
     else:
@@ -91,22 +91,32 @@ def sys_check():
     print(python_version())
     try:
         # python 3
-        print(subprocess.getoutput("uname -mrs"))
-        print(subprocess.getoutput("python3 --version"))
-        print(subprocess.getoutput("systemd --version"))
+        print(subprocess_get_output("uname -mrs"))
+        print(subprocess_get_output("python3 --version"))
+        print(subprocess_get_output("systemd --version"))
     except:
-        # python 2
+        # python 2 - not supported
         #cmd = ['uname','-mrs']
         # returns output as byte string
         #returned_output = subprocess.check_output(cmd)
         # using decode() function to convert byte string to string
-        print(subprocess_check_output('uname','-mrs')) #.decode("utf-8"))
-        print(subprocess_check_output('python','--version')) #.decode("utf-8"))
-        print(subprocess_check_output('systemd','--version')) #.decode("utf-8"))
+        #print(subprocess_check_output('uname','-mrs')) #.decode("utf-8"))
+        #print(subprocess_check_output('python','--version')) #.decode("utf-8"))
+        #print(subprocess_check_output('systemd','--version')) #.decode("utf-8"))
+        print("Fatal error! Python version not supported yet. Exiting app...")
+        exit()
 
 def subprocess_check_output(a, b):
     try:
        res = subprocess.check_output([a,b]).strip()
+    except:
+       print("Fatal error! Exiting app...")
+       exit()
+    return res
+
+def subprocess_get_output(cmd):
+    try:
+       res = subprocess.getoutput(cmd)
     except:
        print("Fatal error! Exiting app...")
        exit()
@@ -282,32 +292,38 @@ def save_systemd_service():
 def enable_systemd_service():
     global service_selected
     print("Enabling service : " + service_selected)
-    print(subprocess.getoutput("sudo systemctl enable " + service_selected))
+    print(subprocess_get_output("sudo systemctl enable " + service_selected))
+    #print(subprocess_check_output('sudo','systemctl enable ' + service_selected))
 
 def disable_systemd_service():
     global service_selected
     print("Disabling service : " + service_selected)
-    print(subprocess.getoutput("sudo systemctl disable " + service_selected))
+    print(subprocess_get_output("sudo systemctl disable " + service_selected))
+    #print(subprocess_check_output('sudo','systemctl disable ' + service_selected))
 
 def start_systemd_service():
     global service_selected
     print("Starting service : " + service_selected)
-    print(subprocess.getoutput("sudo systemctl start " + service_selected))
+    print(subprocess_get_output("sudo systemctl start " + service_selected))
+    #print(subprocess_check_output('sudo','systemctl start ' + service_selected))
 
 def stop_systemd_service():
     global service_selected
     print("Stopping service : " + service_selected)
-    print(subprocess.getoutput("sudo systemctl stop " + service_selected))
+    print(subprocess_get_output("sudo systemctl stop " + service_selected))
+    #print(subprocess_check_output('sudo','systemctl stop ' + service_selected))
 
 def restart_systemd_service():
     global service_selected
     print("Restarting service : " + service_selected)
-    print(subprocess.getoutput("sudo systemctl restart " + service_selected))
+    print(subprocess_get_output("sudo systemctl restart " + service_selected))
+    #print(subprocess_check_output('sudo','systemctl restart ' + service_selected))
 
 def status_systemd_service():
     global service_selected
     print("Checking service : " + service_selected)
-    print(subprocess.getoutput("sudo systemctl status " + service_selected))
+    print(subprocess_get_output("sudo systemctl status " + service_selected))
+    #print(subprocess_check_output('sudo','systemctl status ' + service_selected))
 
 def remove_systemd_service():
     global service_selected, systemd_folder
@@ -319,14 +335,16 @@ def remove_systemd_service():
        exit()
     elif option == "yes":
        print("Removing service...")
-       print(subprocess.getoutput("rm " + systemd_folder + "/" + service_selected))
+       print(subprocess_get_output("rm " + systemd_folder + "/" + service_selected))
+       #print(subprocess_check_output('rm', systemd_folder + "/" + service_selected))
        print("Done")
        print("Bye")
        exit()
 
 def reload_systemd_daemon():
     print("Reloading System D daemon...")
-    print(subprocess.getoutput("sudo systemctl daemon-reload"))
+    print(subprocess_get_output("sudo systemctl daemon-reload"))
+    #print(subprocess_check_output('sudo systemctl', 'daemon-reload'))
 
 def install_service():
     list_apps()
