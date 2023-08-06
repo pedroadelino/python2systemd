@@ -1,6 +1,7 @@
 #!/usr/bin python3
 
 import os, subprocess
+from platform import python_version
 # this app installs python apps
 # and activate the apps as System D services
 # it also lets you check if service is running
@@ -87,9 +88,29 @@ def check_status():
     status_systemd_service()
 
 def sys_check():
-    print(subprocess.getoutput("uname -mrs"))
-    print(subprocess.getoutput("python3 --version"))
-    print(subprocess.getoutput("systemd --version"))
+    print(python_version())
+    try:
+        # python 3
+        print(subprocess.getoutput("uname -mrs"))
+        print(subprocess.getoutput("python3 --version"))
+        print(subprocess.getoutput("systemd --version"))
+    except:
+        # python 2
+        #cmd = ['uname','-mrs']
+        # returns output as byte string
+        #returned_output = subprocess.check_output(cmd)
+        # using decode() function to convert byte string to string
+        print(subprocess_check_output('uname','-mrs')) #.decode("utf-8"))
+        print(subprocess_check_output('python','--version')) #.decode("utf-8"))
+        print(subprocess_check_output('systemd','--version')) #.decode("utf-8"))
+
+def subprocess_check_output(a, b):
+    try:
+       res = subprocess.check_output([a,b]).strip()
+    except:
+       print("Fatal error! Exiting app...")
+       exit()
+    return res
 
 def check_folders():
     global systemd_folder, systemd_folder_exists, py_apps_folder, py_apps_folder_exists, python_bin_folder, python_bin_folder_exists, python_bin, python_bin_exists
@@ -126,27 +147,41 @@ def check_folders():
 
 def list_apps():
     global py_apps_folder
+    nr_apps = 0
     print("Searching for apps...")
-    res = subprocess.getoutput("ls " + py_apps_folder + "/*.py")
-    if res == "":
+    #res = subprocess.getoutput("ls " + py_apps_folder + "/*.py")
+    for path in os.scandir(py_apps_folder):
+        if path.is_file():
+            if os.path.splitext(path.name)[1] == ".py":
+                nr_apps += 1
+                bytes = os.path.getsize(py_apps_folder + "/" + path.name)
+                print(str(nr_apps) + " : " + path.name + " , " + str(bytes) + " bytes")
+    if nr_apps == 0:
         print("No apps found!")
         print("Exiting app...")
         exit()
     else:
         print("Choose the app to install : ")
-        print(res)
+        #print(res)
 
 def list_services():
     global systemd_folder
+    nr_services = 0
     print("Searching for services...")
-    res  = subprocess.getoutput("ls " + systemd_folder + "/*_p2sd.service")
-    if res == "":
+    #res  = subprocess.getoutput("ls " + systemd_folder + "/*_p2sd.service")
+    for path in os.scandir(systemd_folder):
+        if path.is_file():
+            if os.path.splitext(path.name)[1] == "_p2sd.service":
+                nr_services += 1
+                bytes = os.path.getsize(systemd_folder + "/" + path.name)
+                print(str(nr_services) + " : " + path.name + " , " + str(bytes) + " bytes")
+    if nr_services == 0:
        print("No p2sd services found!")
        print("Exiting app...")
        exit()
     else:
        print("Choose the service : ")
-       print(res)
+       #print(res)
 
 def read_input_app():
     global app_selected, py_apps_folder
@@ -191,7 +226,6 @@ def read_input_service():
             print("Fatal error!")
             exit()
     # check if service exists in folder, exit app if no app exists
-
 
 def read_name_service():
     global service_name, service_filename, app_selected, systemd_folder
