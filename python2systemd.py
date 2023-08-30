@@ -7,10 +7,10 @@ from platform import python_version
 # it also lets you check if service is running
 # and disable and uninstall the service
 
-
+# var
 python_bin_folder = "/usr/bin"
 python_bin_folder_exists = False
-python_bin = "python3"
+python_bin = ""
 python_bin_exists = False
 py_apps_folder = os.getcwd() + "/python_apps"
 py_apps_folder_exists = False
@@ -33,7 +33,15 @@ def menu():
     print("7 - Check service status")
     print("8 - Reload Daemon")
     print("9 - Exit app")
-    option = input("Choose an option : ")
+    try:
+        print(python_bin)
+        if python_bin == "python":
+           option = raw_input("Choose an option : ")
+        elif python_bin == "python3":
+           option = input("Choose an option : ")
+    except:
+        print("Fatal error! Exiting app..")
+        exit()
     if option == "1" or option == 1:
        install_service()
     elif option == "2" or option == 2:
@@ -88,38 +96,61 @@ def check_status():
     status_systemd_service()
 
 def sys_check():
+    global python_bin
     print(python_version())
-    try:
+    if python_version()[0] == "3":
+        python_bin = "python3"
+    #elif python_version()[0] == "3":
+       #python_bin = "python3"
+    #try:
         # python 3
         print(subprocess_get_output("uname -mrs"))
         print(subprocess_get_output("python3 --version"))
         print(subprocess_get_output("systemd --version"))
-    except:
+        #python_bin = "python3"
+    #except:
+    elif python_version()[0] == "2":
+        python_bin = "python"
         # python 2 - not supported
         #cmd = ['uname','-mrs']
         # returns output as byte string
         #returned_output = subprocess.check_output(cmd)
         # using decode() function to convert byte string to string
-        #print(subprocess_check_output('uname','-mrs')) #.decode("utf-8"))
-        #print(subprocess_check_output('python','--version')) #.decode("utf-8"))
-        #print(subprocess_check_output('systemd','--version')) #.decode("utf-8"))
-        print("Fatal error! Python version not supported yet. Exiting app...")
-        exit()
+        print(subprocess_check_output('uname','-mrs')) #.decode("utf-8"))
+        print(subprocess_check_output('python','--version')) #.decode("utf-8"))
+        print(subprocess_check_output('systemd','--version')) #.decode("utf-8"))
+        #python_bin = "python"
+        #print("Fatal error! Python version not supported yet. Exiting app...")
+        #exit()
 
 def subprocess_check_output(a, b):
+    # python
     try:
        res = subprocess.check_output([a,b]).strip()
+       #rc=res.wait()
+       subprocess._cleanup()
+       #res.stdout.close()
+       #res.stderr.close()
     except:
+       print("Subprocess")
        print("Fatal error! Exiting app...")
        exit()
+    #subprocess.checkoutput.kill()
     return res
 
 def subprocess_get_output(cmd):
+    # python 3
     try:
        res = subprocess.getoutput(cmd)
+       #rc=res.wait()
+       subprocess._cleanup()
+       #res.stdout.close()
+       #res.stderr.close()
     except:
+       print("Subprocess 3")
        print("Fatal error! Exiting app...")
        exit()
+    #subprocess.kill()
     return res
 
 def check_folders():
@@ -159,6 +190,41 @@ def list_apps():
     global py_apps_folder
     nr_apps = 0
     print("Searching for apps...")
+    for root, dirs, files in os.walk(py_apps_folder):
+       for filename in files:
+          if filename.endswith(".py"):
+             nr_apps += 1
+             bytes = os.path.getsize(py_apps_folder + "/" + filename)
+             print(str(nr_apps) + " : " + filename + " , " + str(bytes) + " bytes")
+    #print(nr_apps)
+    if nr_aps == 0:
+       print("No apps found!")
+       print("Exiting app...")
+       exit()
+    else:
+       print("Choose the app to install :")
+
+def list_services():
+    global systemd_folder
+    nr_services = 0
+    print("Searching for services...")
+    for root, dirs, files in os.walk(systemd_folder):
+       for filename in files:
+          if filename.endswith("_p2sd.service"):
+             nr_services += 1
+             bytes = os.path.getsize(systemd_folder + "/" + filename)
+             print(str(nr_services) + " : " + filename + " , " + str(bytes) + " bytes")
+    if nr_services == 0:
+       print("No services found!")
+       print("Exiting app..")
+       exit()
+    else:
+       print("Choose the service to install :")
+
+def list_apps_3():
+    global py_apps_folder
+    nr_apps = 0
+    print("Searching for apps...")
     #res = subprocess.getoutput("ls " + py_apps_folder + "/*.py")
     for path in os.scandir(py_apps_folder):
         if path.is_file():
@@ -174,7 +240,7 @@ def list_apps():
         print("Choose the app to install : ")
         #print(res)
 
-def list_services():
+def list_services_3():
     global systemd_folder
     nr_services = 0
     print("Searching for services...")
@@ -288,11 +354,19 @@ def save_systemd_service():
         else:
             print("Installation aborted! Try again!")
             exit()
+def run_system_cmd(task, command):
+    global service_selected, python_bin
+    print(task + service_selected)
+    if python_bin == "python3":
+       print(subprocess_get_output(command + service_selected))
+    elif python_bin == "python":
+       print(subprocess_check_output(command + service_selected))
 
 def enable_systemd_service():
-    global service_selected
+    global service_selected, python_bin
     print("Enabling service : " + service_selected)
-    print(subprocess_get_output("sudo systemctl enable " + service_selected))
+    if python_bin == "python3":
+        print(subprocess_get_output("sudo systemctl enable " + service_selected))
     #print(subprocess_check_output('sudo','systemctl enable ' + service_selected))
 
 def disable_systemd_service():
@@ -357,6 +431,7 @@ def install_service():
 
 # Main
 def main():
+    #print(raw_input("Teste:"))
     print("Python 2 System D")
     print("Made by Pedro Adelino")
     print("Starting...")
